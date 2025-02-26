@@ -2,8 +2,8 @@ const express = require("express");
 const app = express();
 const cors = require("cors")
 //require('dotenv').config({ path: './TEST.env' });
-const designRouter = require("C:/Users/sw3/source/repos/PDM/server/designRouter");
-const user = require("C:/Users/sw3/source/repos/PDM/server/userRouter");
+const designRouter = require("./designRouter");
+const user = require("./userRouter");
 
 //middleware
 app.use(cors({

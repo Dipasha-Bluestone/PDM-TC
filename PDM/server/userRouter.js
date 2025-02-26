@@ -7,7 +7,7 @@ require("dotenv").config();
 
 // Configure Multer for profile picture uploads
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Secret key for JWT
 const SECRET_KEY = process.env.JWT_SECRET || "D3CE626C-C945-418E-A407-0CEDE5E4CB5B";
@@ -48,12 +48,13 @@ router.post("/login", async (req, res) => {
 
         // Fetch user with RoleName
         const user = await pool.query(
-            `SELECT u.*, r.RoleName FROM pdm_user u 
-             JOIN role r ON u.RoleID = r.RoleID 
-             WHERE u.Email = $1`,
-            [email]
-        );
-
+            `SELECT u.*, r.RoleName,
+            COALESCE(d.author, 1) AS author
+            FROM pdm_user u
+            JOIN role r ON u.RoleID = r.RoleID
+            LEFT JOIN designs d ON d.author = u.userid
+            WHERE u.Email = $1;`, [email]);
+                                                  
         if (user.rows.length === 0) {
             return res.status(400).json({ error: "Invalid email or password" });
         }
@@ -64,14 +65,23 @@ router.post("/login", async (req, res) => {
             return res.status(400).json({ error: "Invalid email or password" });
         }
 
+        let userData = user.rows[0];
+
+        // Convert profile_pic from Buffer to Base64 (if it exists)
+        if (userData.profile_pic && Buffer.isBuffer(userData.profile_pic)) {
+            userData.profile_pic = `data:image/jpeg;base64,${userData.profile_pic.toString("base64")}`;
+        } else {
+            userData.profile_pic = null; // Ensure no [object Object] issues
+        }
+
         // Generate JWT token with RoleName
         const token = jwt.sign(
-            { userid: user.rows[0].userid, role: user.rows[0].rolename },
+            { userid: userData.userid, role: userData.rolename },
             SECRET_KEY,
             { expiresIn: "1h" }
         );
 
-        res.json({ message: "Login successful!", token, user: user.rows[0] });
+        res.json({ message: "Login successful!", token, user: userData });
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: "Server error" });
@@ -85,40 +95,45 @@ const authenticateToken = (req, res, next) => {
 
     try {
         const verified = jwt.verify(token.split(" ")[1], SECRET_KEY);
-        req.user = verified;
+        req.user = verified;  // Assign the verified user to req.user
         next();
     } catch (err) {
         res.status(400).json({ error: "Invalid Token" });
     }
 };
+
 // GET AUTHENTICATED USER PROFILE
 router.get("/profile", authenticateToken, async (req, res) => {
     try {
-        const user = await pool.query("SELECT userid, username, email, roleid FROM pdm_user WHERE userid = $1", [req.user.userid]);
+        const user = await pool.query(
+            "SELECT userid, username, email, profile_pic, roleid FROM pdm_user WHERE userid = $1",
+            [req.user.userid]
+        );
 
         if (user.rows.length === 0) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        res.json(user.rows[0]);
+        let userData = user.rows[0];
+
+        res.json(userData);
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: "Server error" });
     }
 });
 
-
 // GET ALL USERS (ADMIN ONLY)
-router.get("/users", async (req, res) => {
-    //console.log("Authenticated User Role:", req.user.role); // Debugging
+router.get("/users", authenticateToken, async (req, res) => {
+    // console.log("Authenticated User Role:", req.user.role); // Debugging
 
-    //if (req.user.role.toLowerCase() !== "admin") {
-    //    return res.status(403).json({ error: "Access denied" });
-    //}
+    if (req.user.role.toLowerCase() !== "admin") {
+        return res.status(403).json({ error: "Access denied" });
+    }
 
     try {
         const users = await pool.query(
-            `SELECT u.UserID, u.Username, u.Email, r.RoleName 
+            `SELECT u.UserID, u.Username, u.Email, u.profile_pic, r.RoleName 
              FROM pdm_user u
              JOIN role r ON u.RoleID = r.RoleID`
         );
@@ -130,16 +145,17 @@ router.get("/users", async (req, res) => {
 });
 
 
+
 // DELETE USER (ADMIN ONLY)
-router.delete("/users/:id", async (req, res) => {
-    //if (req.user.role !== "admin") {
-    //    return res.status(403).json({ error: "Access denied" });
-    //}
+router.delete("/users/:id", authenticateToken, async (req, res) => {
+    if (req.user.role.toLowerCase() !== "admin") {
+        return res.status(403).json({ error: "Access denied" });
+    }
 
     const { id } = req.params;
 
     try {
-        await pool.query("DELETE FROM pdm_user WHERE UserID = $1", [id]);
+        await pool.query("DELETE FROM pdm_user WHERE userid = $1", [id]);
         res.json({ message: "User deleted successfully" });
     } catch (err) {
         console.error(err.message);
@@ -148,26 +164,41 @@ router.delete("/users/:id", async (req, res) => {
 });
 
 //EDIT USERS
-router.put("/users/:id", async (req, res) => {
-    //if (req.user.role !== "Admin") {
-    //    return res.status(403).json({ error: "Access denied" });
-    //}
+router.put(
+    "/users/:id",
+    authenticateToken,
+    upload.single("profile_pic"),
+    async (req, res) => {
+        if (req.user.role.toLowerCase() !== "admin") {
+            return res.status(403).json({ error: "Access denied" });
+        }
 
-    const { username, email, roleid } = req.body;
-    const { id } = req.params;
+        const { username, email, roleid } = req.body;
+        const { id } = req.params;
+        const profile_pic = req.file["profile_pic"] ? req.file["profile_pic"][0].buffer : null;
 
-    try {
-        await pool.query(
-            "UPDATE pdm_user SET Username = $1, Email = $2, RoleID = $3 WHERE UserID = $4",
-            [username, email, roleid, id]
-        );
-        res.json({ message: "User updated successfully" });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: "Server error" });
+        try {
+            const query = `
+                UPDATE pdm_user 
+                SET username = $1, email = $2, roleid = $3, profile_pic = COALESCE($4, profile_pic) 
+                WHERE userid = $5
+            `;
+
+            const values = [username, email, roleid, profile_pic, id];
+
+            const result = await pool.query(query, values);
+
+            if (result.rowCount === 0) {
+                return res.status(404).json({ error: "User not found" });
+            }
+
+            res.json({ message: "User updated successfully" });
+        } catch (err) {
+            console.error("Database Error:", err.message);
+            res.status(500).json({ error: "Server error" });
+        }
     }
-});
-
+);
 
 
 //roles
