@@ -57,7 +57,7 @@ const Design = ({ user, setUser }) => {
             <h1 className="text-center mt-4">PDM Designs</h1>
 
             {/* Add New Design */}
-            {user &&(user.roleid === 1 || user.roleid === 2) && (
+            {user && (user.roleid === 1 || user.roleid === 2 || user.roleid === 3 || user.roleid === 4) && (
                 <>
             <InputDesign onDesignAdded={() => window.location.reload()} />
                 </>)}

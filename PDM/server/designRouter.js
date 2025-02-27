@@ -38,9 +38,7 @@ router.post(
             return res.status(403).json({ error: "Access denied" });
         }
         try {
-            if (!hasAddPermission(req.user)) {
-                return res.status(403).json({ error: "You do not have permission to add a design." });
-            }
+            
             const { design_number, category, product_type, price, description, design_dimensions, text_notes, gems, metals } =
                 req.body;
             const design_image = req.files["design_image"] ? req.files["design_image"][0].buffer : null;
@@ -52,7 +50,7 @@ router.post(
             const newDesign = await pool.query(
                 `INSERT INTO designs (design_number, design_image, category, product_type, price, description, design_dimensions,text_notes,author,created_at) 
                  VALUES ($1, $2, $3, $4, $5, $6, $7,$8,$9,NOW()) RETURNING *`,
-                [design_number, design_image, category, product_type, price, description, design_dimensions, text_notes, req.user.username]
+                [design_number, design_image, category, product_type, price, description, design_dimensions, text_notes, req.user.userid]
             );
 
             // Insert gems
