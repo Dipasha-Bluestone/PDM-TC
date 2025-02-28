@@ -1,6 +1,8 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./Home.css"; //styling
+import { motion } from "framer-motion"; 
 
 const Home = ({ user, setUser }) => { 
     const navigate = useNavigate();
@@ -15,11 +17,15 @@ const Home = ({ user, setUser }) => {
     };
 
     return (
-        <div>
-            {/* Navbar */}
-            <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div className="home-container">
+                       {/* Navbar */}
+            <motion.nav className="navbar navbar-expand-lg navbar-dark custom-navbar"
+                initial={{ opacity: 0, y: 1000 }}  // Start slightly below and invisible
+                animate={{ opacity: 1, y: 0 }}  // Animate to visible and normal position
+                transition={{ duration: 1, ease: "easeOut" }}>
                 <div className="container-fluid">
-                    <Link className="navbar-brand" to="/">Home</Link>
+                
+                    <Link className="navbar-brand" to="/">AurumPDM</Link>
                     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                         <span className="navbar-toggler-icon"></span>
                     </button>
@@ -43,32 +49,42 @@ const Home = ({ user, setUser }) => {
                         </ul>
                     </div>
                 </div>
-            </nav>
+            </motion.nav>
 
-            {/* Welcome Message */}
-            <div className="container mt-5 text-center">
+            {/* Welcome Section */}
+            <motion.div className="container d-flex justify-content-center align-items-center vh-100"
+                initial={{ opacity: 0, y: 1000 }}  // Start slightly below and invisible
+                animate={{ opacity: 1, y: 0 }}  // Animate to visible and normal position
+                transition={{ duration: 1, ease: "easeOut" }}>
                 {user ? (
-                    <>
-                        {/* Profile Picture */}
-                        <img
-                            src={user.profile_pic || defaultProfilePic}
-                            alt="Profile"
-                            className="rounded-circle mb-3"
-                            style={{ width: "100px", height: "100px", objectFit: "cover" }}
-                        />
 
-                        {/* Welcome Message */}
-                        <h1>Hi {user.username}, you are logged in as <strong>{user.rolename}</strong></h1>
-                    </>
+                    <div className="profile-card d-flex p-4 shadow">
+                        {/* Profile Picture */}
+                        <div className="profile-pic-container">
+                            <img
+                                src={user.profile_pic || defaultProfilePic}
+                                alt="Profile"
+                                className="profile-pic"
+                            />
+                        </div>
+
+                        {/* User Info */}
+                        <div className="profile-info">
+                            <h2>{user.username}</h2>
+                            <p className="role">{user.rolename}</p>
+                        </div>
+                    </div>
                 ) : (
-                    <div>
+                    <div className="text-center">
                         <h1>Welcome! Please log in.</h1>
                         <br />
                         <Link to="/login" className="btn btn-primary">Login</Link>
                     </div>
                 )}
-            </div> </div>
+            </motion.div>
+        </div>
     );
 };
+
 
 export default Home;

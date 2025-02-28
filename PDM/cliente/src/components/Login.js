@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion"; // Import Framer Motion
+import "./Login.css"; // Styling
 
-const Login = ({ setUser }) => { //Receive setUser from props
+const Login = ({ setUser }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setError("");
 
         try {
             const response = await fetch("http://localhost:5000/login", {
@@ -20,34 +24,51 @@ const Login = ({ setUser }) => { //Receive setUser from props
 
             if (response.ok) {
                 let user = data.user;
-
-                //// Convert profile_pic (BYTEA) to Base64 if it exists
-                //if (user.profile_pic) {
-                //    user.profile_pic = `data:image/png;base64,${user.profile_pic.toString("base64")}`;
-                //}
-
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("user", JSON.stringify(user));
                 setUser(user);
-                navigate("/");
+
+                // Delay navigation to allow exit animation
+                setTimeout(() => {
+                    navigate("/");
+                }, 500);
             } else {
-                alert(data.error);
+                setError(data.error);
             }
         } catch (err) {
-            console.error("Login error:", err);
+            setError(err.message);
         }
     };
 
-
     return (
-        <div>
-            <h2>Login</h2>
-            <form onSubmit={handleLogin}>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-                <button type="submit">Login</button>
-            </form>
-        </div>
+        <motion.div
+            className="login-container"
+            exit={{ opacity: 0, y: -50 }} // Slide out upwards on exit
+            transition={{ duration: 0.5, ease: "easeOut" }} // Smooth transition
+        >
+            <h1 className="app-title">AurumPDM</h1>
+            <div className="login-card">
+                <h2 className="login-title">Login</h2>
+                {error && <p className="error-message">{error}</p>}
+                <form onSubmit={handleLogin}>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Email"
+                        required
+                    />
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Password"
+                        required
+                    />
+                    <button type="submit" className="login-button">Login</button>
+                </form>
+            </div>
+        </motion.div>
     );
 };
 

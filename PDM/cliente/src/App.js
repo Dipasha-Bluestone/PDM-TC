@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Home from "./components/Home";
 import Register from "./components/Register";
@@ -34,7 +34,7 @@ function App() {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<Home user={user} setUser={setUser} />} />
+                <Route path="/" element={isAuthenticated ? <Home user={user} setUser={setUser} /> : <Navigate to="/login" />} />
                 <Route path="/login" element={<Login setUser={setUser} />} />
 
                 {/* Admin-only routes */}

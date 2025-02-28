@@ -1,0 +1,72 @@
+﻿/* Background Image & Full-Screen Centering */
+.login-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: url("https://wallpaperaccess.com/full/685267.jpg") no-repeat center center/cover;
+}
+
+/* Card Style */
+.login-card {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 350px;
+    text-align: center;
+}
+
+/* Title */
+.login-title {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+/* Input Fields */
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+/* Button */
+.login-button {
+    width: 100%;
+    padding: 10px;
+    background: goldenrod;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-button:hover {
+        background: darkgoldenrod;
+    }
+
+/* Error Message */
+.error-message {
+    color: red;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.app-title {
+    text-align: center;
+    font-size: 3rem;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-weight: bold;
+    margin-top: -200px;
+    margin-bottom: 20px;
+    padding: 60px;
+    color: #ca4e00;
+}
+
