@@ -1,9 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
 import Home from "./components/Home";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Design from "./components/Design";
+import InputDesign from "./components/InputDesign";
 import ManageUsers from "./components/ManageUsers";
 
 function App() {
@@ -23,44 +25,54 @@ function App() {
     const isCustomer = user?.rolename?.toLowerCase() === "customer";
     const isSales = user?.rolename?.toLowerCase() === "salesperson";
 
-    const AccessRestricted = () => (
-        <div style={{ textAlign: "center", marginTop: "20px", color: "red", fontWeight: "bold" }}>
-        <br/>
-            <h2>Access Restricted</h2>
-            <p>You do not have permission to view this page. Please contact the admin in case this is a mistake.</p>
-        </div>
-    ); 
+    return (<Router>
+        <AnimatedRoutes isAuthenticated={isAuthenticated} user={user} setUser={setUser} isAdmin={isAdmin} isCustomer={isCustomer} isSales={isSales} />
+    </Router>);
+}
+const AccessRestricted = () => (
+    <div style={{ textAlign: "center", marginTop: "20px", color: "red", fontWeight: "bold" }}>
+        <br />
+        <h2>Access Restricted</h2>
+        <p>You do not have permission to view this page. Please contact the admin in case this is a mistake.</p>
+    </div>
+);
 
-    return (
-        <Router>
-            <Routes>
+    const AnimatedRoutes = ({ isAuthenticated, user, setUser, isAdmin, isCustomer, isSales }) => {
+        const location = useLocation();
+
+        return (<AnimatePresence mode="wait"> {/* Ensures exit animations work */}
+      
+            <Routes key={location.pathname} location={location}>
                 <Route path="/" element={isAuthenticated ? <Home user={user} setUser={setUser} /> : <Navigate to="/login" />} />
                 <Route path="/login" element={<Login setUser={setUser} />} />
 
                 {/* Admin-only routes */}
                 {isAuthenticated && isAdmin ? (
                     <>
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/manage-users" element={<ManageUsers />} />
+                        <Route path="/register" element={<Register user={user} setUser={setUser} />} />
+                        <Route path="/manage-users" element={<ManageUsers user={user} setUser={setUser} />} />
                     </>
                 ) : (
                     <>
-                            <Route path="/register" element={<AccessRestricted />} />
-                            <Route path="/manage-users" element={<AccessRestricted />} />
+                        <Route path="/register" element={<AccessRestricted />} />
+                        <Route path="/manage-users" element={<AccessRestricted />} />
                     </>
                 )}
+
                 {/* Forbid sales and customers routes */}
-                {isAuthenticated && isCustomer || isAuthenticated && isSales ? (
+                {isAuthenticated && (isCustomer || isSales) ? (
                     <>
                         <Route path="/designs" element={<Design user={user} setUser={setUser} />} />
+                        <Route path="/bom" element={<InputDesign user={user} setUser={setUser} />} />
                     </>
                 ) : (
-                        <>
+                    <>
                             <Route path="/designs" element={<Design user={user} setUser={setUser} />} />
+                            <Route path="/bom" element={<InputDesign user={user} setUser={setUser} />} />
                     </>
                 )}
             </Routes>
-        </Router>
+        </AnimatePresence>
     );
 }
 

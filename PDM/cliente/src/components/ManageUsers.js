@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import Navbar from "./Navbar";
 
-const ManageUsers = () => {
+const ManageUsers = ({ user, setUser }) => {
     const [users, setUsers] = useState([]);
     const [editUser, setEditUser] = useState(null);
     const [formData, setFormData] = useState({ username: "", email: "", roleid: "" });
     const [profilePicFile, setProfilePicFile] = useState(null);
     const [roles, setRoles] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchUsers();
@@ -36,6 +38,13 @@ const ManageUsers = () => {
         } catch (error) {
             console.error("Error fetching roles:", error);
         }
+    };
+
+    // Logout function
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        setUser(null); // Clear user in App.js
+        navigate("/");
     };
 
     const handleEdit = (user) => {
@@ -82,7 +91,9 @@ const ManageUsers = () => {
     };
 
     return (
+        <div>  <Navbar user={user} handleLogout={handleLogout} />
         <div className="container mt-5">
+          
             <h1>Manage Users</h1>
             <Link to="/register" className="btn btn-primary mb-3">Register New User</Link>
 
@@ -142,6 +153,7 @@ const ManageUsers = () => {
                     <button className="btn btn-secondary mt-2" onClick={() => setEditUser(null)}>Cancel</button>
                 </div>
             )}
+            </div>
         </div>
     );
 };

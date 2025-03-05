@@ -24,9 +24,10 @@ const authenticateToken = (req, res, next) => {
     }
 };
 
-/*Create Design*/
+/* Create Design */
 router.post(
-    "/designs", authenticateToken,
+    "/designs",
+    authenticateToken,
     upload.fields([
         { name: "design_image", maxCount: 1 },
         { name: "cad_file", maxCount: 1 },
@@ -37,10 +38,22 @@ router.post(
         if (req.user.role.toLowerCase() === "salesperson" || req.user.role.toLowerCase() === "customer") {
             return res.status(403).json({ error: "Access denied" });
         }
+
         try {
-            
-            const { design_number, category, product_type, price, description, design_dimensions, text_notes, gems, metals } =
-                req.body;
+            const {
+                design_number,
+                price,
+                description,
+                design_dimensions,
+                text_notes,
+                gems,
+                metals,
+                product_type,
+                design_type,
+                collections,
+                customers
+            } = req.body;
+
             const design_image = req.files["design_image"] ? req.files["design_image"][0].buffer : null;
             const cad_file = req.files["cad_file"] ? req.files["cad_file"][0].buffer : null;
             const model_sheet = req.files["model_sheet"] ? req.files["model_sheet"][0].buffer : null;
@@ -48,10 +61,30 @@ router.post(
 
             // Insert into designs table
             const newDesign = await pool.query(
-                `INSERT INTO designs (design_number, design_image, category, product_type, price, description, design_dimensions,text_notes,author,created_at) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7,$8,$9,NOW()) RETURNING *`,
-                [design_number, design_image, category, product_type, price, description, design_dimensions, text_notes, req.user.userid]
+                `INSERT INTO designs (design_number, design_image, price, description, design_dimensions, text_notes, author, created_at) 
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *`,
+                [design_number, design_image, price, description, design_dimensions, text_notes, req.user.userid]
             );
+
+
+            // Store categories in an array
+            const categoryEntries = [
+                { id: product_type, type: 'Product Type' },
+                { id: collections, type: 'Collection' },
+                { id: design_type, type: 'Design Type' },
+                { id: customers, type: 'Customer' }
+            ];
+
+            // Insert valid categories into design_categories
+            for (const entry of categoryEntries) {
+                if (entry.id) {
+                    await pool.query(
+                        `INSERT INTO design_categories (design_id, category_id)
+                         VALUES ($1, $2)`,
+                        [design_number, entry.id]
+                    );
+                }
+            }
 
             // Insert gems
             if (gems) {
@@ -162,7 +195,7 @@ router.put("/designs/:design_number", authenticateToken,
                 return res.status(403).json({ error: "Access denied" });
             }
             const { design_number } = req.params;
-            const { category, product_type, price, description, design_dimensions, text_notes, gems, metals } = req.body;
+            const {product_type, price, description, design_dimensions, text_notes, gems, metals } = req.body;
             const design_image = req.files["design_image"] ? req.files["design_image"][0].buffer : null;
             const cad_file = req.files["cad_file"] ? req.files["cad_file"][0].buffer : null;
             const model_sheet = req.files["model_sheet"] ? req.files["model_sheet"][0].buffer : null;
@@ -177,10 +210,10 @@ router.put("/designs/:design_number", authenticateToken,
             
             await pool.query(
                 `UPDATE designs 
-                 SET category = $1, product_type = $2, price = $3, description = $4, design_dimensions = $5, 
-                     design_image = COALESCE($6, design_image),modified_by = $8, last_modified_at = NOW(), text_notes = $9
-                 WHERE design_number = $7`,
-                [category, product_type, price, description, design_dimensions, design_image, design_number, req.user.username, text_notes]
+                 SET product_type = $1, price = $2, description = $3, design_dimensions = $4, 
+                     design_image = COALESCE($5, design_image),modified_by = $7, last_modified_at = NOW(), text_notes = $8
+                 WHERE design_number = $6`,
+                [product_type, price, description, design_dimensions, design_image, design_number, req.user.username, text_notes]
             );
 
             //Update gems
@@ -247,5 +280,40 @@ router.delete("/designs/:design_number", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
+
+//categories
+router.get("/categories", async (req, res) => {
+    try {
+        const categories = await pool.query("SELECT * FROM categories");
+        res.json(categories.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+//metals
+router.get("/metals", async (req, res) => {
+    try {
+        const metals = await pool.query("SELECT * FROM metals");
+        res.json(metals.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+//gemstones
+router.get("/gemstones", async (req, res) => {
+    try {
+        const gemstones = await pool.query("SELECT * FROM gemstones");
+        res.json(gemstones.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
 
 module.exports = router;

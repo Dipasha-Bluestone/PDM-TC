@@ -41,13 +41,15 @@ const Login = ({ setUser }) => {
     };
 
     return (
-        <motion.div
-            className="login-container"
-            exit={{ opacity: 0, y: -50 }} // Slide out upwards on exit
-            transition={{ duration: 0.5, ease: "easeOut" }} // Smooth transition
-        >
-            <h1 className="app-title">AurumPDM</h1>
-            <div className="login-card">
+        <div
+            className="login-container">
+        
+            <motion.h1 className="app-title"
+             exit={{ opacity: 0, y: -50 }} // Slide out upwards on exit
+            transition={{ duration: 0.5, ease: "easeOut" }}>AurumPDM</motion.h1>
+            <motion.div className="login-card"
+                exit={{ opacity: 0, y: -50 }} // Slide out upwards on exit
+                transition={{ duration: 0.5, ease: "easeOut" }} >
                 <h2 className="login-title">Login</h2>
                 {error && <p className="error-message">{error}</p>}
                 <form onSubmit={handleLogin}>
@@ -67,8 +69,8 @@ const Login = ({ setUser }) => {
                     />
                     <button type="submit" className="login-button">Login</button>
                 </form>
-            </div>
-        </motion.div>
+            </motion.div>
+        </div>
     );
 };
 

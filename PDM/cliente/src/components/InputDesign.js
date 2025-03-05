@@ -1,14 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
+import ProductTypeSelector from "./Categories/ProductTypeSelector";
+import CollectionSelector from "./Categories/CollectionsSelector";
+import DesignTypeSelector from "./Categories/DesignTypeSelector";
+import CustomerSelector from "./Categories/CustomerSelector";
+import "./InputDesign.css"; //styling
 
-const InputDesign = () => {
+const InputDesign = ({ user, setUser }) => {
     const [design_number, setDesignNumber] = useState("");
     const [design_image, setDesignImage] = useState(null);
-    const [category, setCategory] = useState("");
     const [product_type, setProductType] = useState("");
+    const [subProductType, setSubProductType] = useState(""); 
+    const [collection, setCollection] = useState("");
+    const [design_type, setDesignType] = useState("");
+    const [customers, setCustomer] = useState("");
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
     const [design_dimensions, setDesignDimensions] = useState("");
     const [textnotes, setTextnotes] = useState("");
+    const navigate = useNavigate();
 
     // Metal Details
     const [metals, setMetals] = useState([]);
@@ -42,7 +53,13 @@ const InputDesign = () => {
     const [cad_file, setCadFile] = useState(null);
     const [model_sheet, setModelSheet] = useState(null);
     const [other_files, setOtherFiles] = useState([]);
-    
+
+    // Logout function
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        setUser(null); // Clear user in App.js
+        navigate("/");
+    };
 
     const onSubmitForm = async (e) => {
         e.preventDefault();
@@ -50,8 +67,11 @@ const InputDesign = () => {
         const formData = new FormData();
         formData.append("design_number", design_number);
         formData.append("design_image", design_image);
-        formData.append("category", category);
         formData.append("product_type", product_type);
+        formData.append("subProductType", subProductType);
+        formData.append("collection", collection);
+        formData.append("design_type", design_type);
+        formData.append("customers", customers);
         formData.append("price", price);
         formData.append("description", description);
         formData.append("design_dimensions", design_dimensions);
@@ -95,14 +115,35 @@ const InputDesign = () => {
         }
     };
 
-    return (
-        <div>
+    return (<div> {/* Navbar */}
+            < Navbar user={user} handleLogout={handleLogout} />
+         <div className="input-container">
+         <div>
+        <h2>Bill of Material</h2>
             <form className="d-flex flex-column mt-5" onSubmit={onSubmitForm} encType="multipart/form-data">
                 {/* Design Info */}
                 <input type="text" className="form-control" placeholder="Design Number" value={design_number} onChange={(e) => setDesignNumber(e.target.value)} required />
                 <input type="file" className="form-control" accept="image/*" onChange={(e) => setDesignImage(e.target.files[0])} required />
-                <input type="text" className="form-control" placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} required />
-                <input type="text" className="form-control" placeholder="Product Type" value={product_type} onChange={(e) => setProductType(e.target.value)} required />
+                {/* Product Type Dropdown */}
+                <ProductTypeSelector
+                    onProductTypeChange={(selectedType) => setProductType(selectedType)}
+                        user={user}
+                />
+                {/* Collections Dropdown */}
+                <CollectionSelector
+                    onCollectionChange={(selectedType) => setCollection(selectedType)}
+                    user={user}
+                />
+                {/* Design Type Dropdown */}
+                <DesignTypeSelector
+                    onDesignTypeChange={(selectedType) => setDesignType(selectedType)}
+                    user={user}
+                    />
+                 {/* Customers Dropdown */}
+                    <CustomerSelector
+                        onCustomerChange={(selectedType) => setCustomer(selectedType)}
+                        user={user}
+                    />
                 <input type="number" step="0.01" className="form-control" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} required />
                 <textarea className="form-control" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
                 <input type="text" className="form-control" placeholder="Design Dimensions" value={design_dimensions} onChange={(e) => setDesignDimensions(e.target.value)} required />
@@ -148,7 +189,8 @@ const InputDesign = () => {
 
                 <button className="btn btn-success mt-3">Add Design</button>
             </form>
-        </div>
+            </div></div>
+        </div >
     );
 };
 
