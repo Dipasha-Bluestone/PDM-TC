@@ -3,7 +3,7 @@ import { FaPencilAlt, FaTrash } from "react-icons/fa";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Dropdown, Button, Form } from "react-bootstrap";
 
-const CustomerSelector = ({ onCustomerChange, user }) => {
+const CustomerSelector = ({ onCustomerChange, onSubcategoryChange, user }) => {
     const [customers, setCustomers] = useState([]);
     const [subcategories, setSubcategories] = useState([]);
     const [selectedParent, setSelectedParent] = useState("");
@@ -78,6 +78,20 @@ const CustomerSelector = ({ onCustomerChange, user }) => {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    const handleSubcategorySelection = (name) => {
+        setNewSubcategory(name);
+        setShowSubDropdown(false);
+
+        const matched = subcategories.find(sub => sub.name.toLowerCase() === name.toLowerCase());
+        if (matched) {
+            setSelectedSubcategory(matched.id);
+            onSubcategoryChange(matched.id); // Send subcategory back
+        } else {
+            setSelectedSubcategory("");
+            onSubcategoryChange(null);
+        }
+    };
 
     const handleAddCustomer = async () => {
         if (!newCustomer.trim()) return;
@@ -229,7 +243,7 @@ const CustomerSelector = ({ onCustomerChange, user }) => {
                         type="text"
                         placeholder="Select or type subcategory"
                         value={newSubcategory}  // Show selected name
-                        onChange={(e) => setNewSubcategory(e.target.value)} // Update input value
+                        onChange={(e) => handleSubcategorySelection(e.target.value)} // Update input value
                         onFocus={() => setShowSubDropdown(true)} // Open dropdown on focus
                     />
 
@@ -244,7 +258,7 @@ const CustomerSelector = ({ onCustomerChange, user }) => {
                                 key={sub.id}
                                 className="d-flex justify-content-between align-items-center"
                                 onClick={() => {
-                                    setNewSubcategory(sub.name); // Select subcategory
+                                    handleSubcategorySelection(sub.name); // Select subcategory
                                     setShowSubDropdown(false); // Close dropdown after selection
                                 }}
                             >

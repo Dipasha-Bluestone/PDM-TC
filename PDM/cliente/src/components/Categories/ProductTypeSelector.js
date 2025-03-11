@@ -3,7 +3,7 @@ import { FaPencilAlt, FaTrash } from "react-icons/fa";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Dropdown, Button, Form } from "react-bootstrap";
 
-const ProductTypeSelector = ({ onProductTypeChange, user }) => {
+const ProductTypeSelector = ({ onProductTypeChange, onSubcategoryChange, user }) => {
     const [productTypes, setProductTypes] = useState([]);
     const [subcategories, setSubcategories] = useState([]);
     const [selectedParent, setSelectedParent] = useState("");
@@ -79,6 +79,20 @@ const ProductTypeSelector = ({ onProductTypeChange, user }) => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const handleSubcategorySelection = (name) => {
+        setNewSubcategory(name);
+        setShowSubDropdown(false);
+
+        const matched = subcategories.find(sub => sub.name.toLowerCase() === name.toLowerCase());
+        if (matched) {
+            setSelectedSubcategory(matched.id);
+            onSubcategoryChange(matched.id); // Send subcategory back
+        } else {
+            setSelectedSubcategory("");
+            onSubcategoryChange(null);
+        }
+    };
+
     const handleAddProductType = async () => {
         if (!newProductType.trim()) return;
         try {
@@ -102,7 +116,7 @@ const ProductTypeSelector = ({ onProductTypeChange, user }) => {
     const handleEditSubmit = async () => {
         if (!editName.trim() || !editId) return;
         try {
-            const response = await fetch(`http://localhost:5000/categories/${editId}`, {
+            const response = await fetch(`http://localhost:5000/category/${editId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ name: editName }),
@@ -123,7 +137,7 @@ const ProductTypeSelector = ({ onProductTypeChange, user }) => {
     const handleDelete = async () => {
         if (!deleteId) return;
         try {
-            const response = await fetch(`http://localhost:5000/categories/${deleteId}`, {
+            const response = await fetch(`http://localhost:5000/category/${deleteId}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -229,7 +243,7 @@ const ProductTypeSelector = ({ onProductTypeChange, user }) => {
                         type="text"
                         placeholder="Select or type subcategory"
                         value={newSubcategory}  // Show selected name
-                        onChange={(e) => setNewSubcategory(e.target.value)} // Update input value
+                        onChange={(e) => handleSubcategorySelection(e.target.value)} // Update input value
                         onFocus={() => setShowSubDropdown(true)} // Open dropdown on focus
                     />
 
@@ -244,7 +258,7 @@ const ProductTypeSelector = ({ onProductTypeChange, user }) => {
                                 key={sub.id}
                                 className="d-flex justify-content-between align-items-center"
                                 onClick={() => {
-                                    setNewSubcategory(sub.name); // Select subcategory
+                                    handleSubcategorySelection(sub.name); // Select subcategory
                                     setShowSubDropdown(false); // Close dropdown after selection
                                 }}
                             >

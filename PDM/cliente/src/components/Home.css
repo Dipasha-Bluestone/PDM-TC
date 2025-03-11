@@ -1,6 +1,6 @@
 ﻿/* Cream Background */
 .home-container {
-    background: url("https://wallpaperaccess.com/full/685267.jpg") no-repeat center center/cover;
+    background: url("https://wallpaperaccess.com/download/white-satin-2630337") no-repeat center center;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -8,7 +8,7 @@
 
 /* Complementary Navbar */
 .custom-navbar {
-    background-color:#540000;
+    background-color: #dbdbdb67; /*#ebe2ff*/
 }
 
 /* Profile Card */

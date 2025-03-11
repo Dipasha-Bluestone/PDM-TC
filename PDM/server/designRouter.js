@@ -49,9 +49,13 @@ router.post(
                 gems,
                 metals,
                 product_type,
+                subProductType,
                 design_type,
-                collections,
-                customers
+                subDesignType,
+                collection,
+                subCollection,
+                customers,
+                subCustomers
             } = req.body;
 
             const design_image = req.files["design_image"] ? req.files["design_image"][0].buffer : null;
@@ -70,9 +74,13 @@ router.post(
             // Store categories in an array
             const categoryEntries = [
                 { id: product_type, type: 'Product Type' },
-                { id: collections, type: 'Collection' },
+                { id: subProductType, type: 'Product Type' },
+                { id: collection, type: 'Collection' },
+                { id: subCollection, type: 'Collection' },
                 { id: design_type, type: 'Design Type' },
-                { id: customers, type: 'Customer' }
+                { id: subDesignType, type: 'Design Type' },
+                { id: customers, type: 'Customer' },
+                { id: subCustomers, type: 'Customer' }
             ];
 
             // Insert valid categories into design_categories

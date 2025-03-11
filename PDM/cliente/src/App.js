@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import Home from "./components/Home";
+import AdminSetup from "./components/AdminSetup";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Design from "./components/Design";
@@ -51,11 +52,13 @@ const AccessRestricted = () => (
                     <>
                         <Route path="/register" element={<Register user={user} setUser={setUser} />} />
                         <Route path="/manage-users" element={<ManageUsers user={user} setUser={setUser} />} />
+                        <Route path="/admin-setup" element={<AdminSetup user={user} setUser={setUser} />} />
                     </>
                 ) : (
                     <>
                         <Route path="/register" element={<AccessRestricted />} />
                         <Route path="/manage-users" element={<AccessRestricted />} />
+                        <Route path="/admin-setup" element={<AccessRestricted />} />
                     </>
                 )}
 

@@ -5,7 +5,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: url("https://wallpaperaccess.com/full/685267.jpg") no-repeat center center/cover;
+    background: url("https://wallpaperaccess.com/download/white-satin-2630337") no-repeat center center;
 }
 
 /* Card Style */
@@ -38,7 +38,7 @@ input {
 .login-button {
     width: 100%;
     padding: 10px;
-    background: goldenrod;
+    background: darkgoldenrod;
     color: white;
     border: none;
     border-radius: 5px;
@@ -49,7 +49,8 @@ input {
 }
 
 .login-button:hover {
-        background: darkgoldenrod;
+        background: palegoldenrod;
+        color: darkgoldenrod
     }
 
 /* Error Message */
@@ -67,6 +68,6 @@ input {
     margin-top: -200px;
     margin-bottom: 20px;
     padding: 60px;
-    color: #ca4e00;
+    color: darkgoldenrod; /*ebe2ff ca4e00*/
 }
 
