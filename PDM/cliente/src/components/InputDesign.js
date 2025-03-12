@@ -1,5 +1,6 @@
 import React, { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import CreatableSelect from "react-select/creatable"
 import axios from "axios";
 import Navbar from "./Navbar";
 import "./InputDesign.css";
@@ -17,11 +18,8 @@ const InputDesign = ({ user, setUser }) => {
     const [otherFiles, setOtherFiles] = useState([]);
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
-    const [showNewCategoryInput, setShowNewCategoryInput] = useState({});
-    const [selectedType, setSelectedType] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("");
     const [selectedSubcategory, setSelectedSubcategory] = useState("");
-    const [newCategory, setNewCategory] = useState("");
     const [newSubcategory, setNewSubcategory] = useState("");
     const navigate = useNavigate();
 
@@ -75,47 +73,30 @@ const InputDesign = ({ user, setUser }) => {
     };
     const removeGem = (index) => setGems(gems.filter((_, i) => i !== index));
 
-    const handleAddCategory = async (type) => {
-        if (!newCategory) return;
+    const handleAddCategory = async (type, categoryName, parentId = null) => {
+        if (!categoryName.trim()) return;
 
         try {
             const response = await axios.post(
                 "http://localhost:5000/categories",
-                { name: newCategory, type, parent_id: null }, // Add category under a type
+                { name: categoryName, type, parent_id: parentId },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            setCategories([...categories, response.data]);
-            setSelectedCategory(response.data.id); // Auto-select the new category
-            setNewCategory("");
+            setCategories((prev) => [...prev, response.data]);
+
+            if (parentId) {
+                // It's a subcategory
+                setSelectedSubcategory((prev) => ({
+                    ...prev,
+                    [type]: { ...prev[type], [parentId]: response.data.id },
+                }));
+            } else {
+                // It's a category
+                setSelectedCategory((prev) => ({ ...prev, [type]: response.data.id }));
+            }
         } catch (error) {
-            console.error("Error adding new category:", error);
-        }
-    };
-
-    const handleAddSubcategory = async (parentId) => {
-        if (!newSubcategory) return;
-
-        try {
-            const response = await axios.post(
-                "http://localhost:5000/categories",
-                { name: newSubcategory, parent_id: parentId },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            setCategories([...categories, response.data]);
-
-            setSelectedSubcategory((prev) => ({
-                ...prev,
-                [selectedType]: {
-                    ...prev[selectedType],
-                    [parentId]: response.data.id, // Store per type & category
-                },
-            }));
-
-            setNewSubcategory("");
-        } catch (error) {
-            console.error("Error adding new subcategory:", error);
+            console.error("Error adding category/subcategory:", error);
         }
     };
 
@@ -186,22 +167,66 @@ const InputDesign = ({ user, setUser }) => {
                                 <textarea className="form-control" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
                                 <input type="text" className="form-control" placeholder="Design Dimensions" value={designDimensions} onChange={(e) => setDesignDimensions(e.target.value)} required />
 
-                                {/* Category Section */}
+                                {/* Categories */}
                                 {categories.length > 0 && (
-                                    <div>
+                                    <div className="mb-4">
                                         <h3>Category</h3>
-                                        {types.map((type) => (
-                                            <div key={type} className="mb-4">
-                                                <h5>{type}</h5>
-                                                <select className="form-control" value={selectedCategory[type] || ""} onChange={(e) => setSelectedCategory((prev) => ({ ...prev, [type]: e.target.value }))}>
-                                                    <option value="">Select a Category</option>
-                                                    {categories.filter((cat) => cat.type === type && !cat.parent_id).map((parent) => (
-                                                        <option key={parent.id} value={parent.id}>{parent.name}</option>
-                                                    ))}
-                                                    <option value="add_new">+ Add New Category</option>
-                                                </select>
-                                            </div>
-                                        ))}
+                                        {types
+                                            .filter((type) => !["Author", "Metal", "Gemstone", "Diamond"].includes(type)) // Exclude these types
+                                            .map((type) => (
+                                                <div key={type} className="mb-3">
+                                                    <h5>{type}</h5>
+
+                                                    {/* Multi-input category selection with creation */}
+                                                    <CreatableSelect
+                                                        className="mb-2"
+                                                        options={categories
+                                                            .filter((cat) => cat.type === type && !cat.parent_id)
+                                                            .map((cat) => ({ value: cat.id, label: cat.name }))}
+                                                        value={selectedCategory[type] ? { value: selectedCategory[type], label: categories.find((cat) => cat.id === selectedCategory[type])?.name } : null}
+                                                        onChange={(selectedOption) => {
+                                                            setSelectedCategory((prev) => ({
+                                                                ...prev,
+                                                                [type]: selectedOption ? selectedOption.value : "",
+                                                            }));
+                                                        }}
+                                                        onCreateOption={(inputValue) => handleAddCategory(type, inputValue)}
+                                                        isClearable
+                                                        isSearchable
+                                                        placeholder="Select or type to add..."
+                                                    />
+
+                                                    {/* Subcategories */}
+                                                    {selectedCategory[type] && (
+                                                        <CreatableSelect
+                                                            className="mt-2"
+                                                            options={categories
+                                                                .filter((cat) => String(cat.parent_id) === String(selectedCategory[type]))
+                                                                .map((sub) => ({ value: sub.id, label: sub.name }))}
+                                                            value={
+                                                                selectedSubcategory[type]?.[selectedCategory[type]]
+                                                                    ? {
+                                                                        value: selectedSubcategory[type][selectedCategory[type]],
+                                                                        label: categories.find(
+                                                                            (cat) => cat.id === selectedSubcategory[type][selectedCategory[type]]
+                                                                        )?.name,
+                                                                    }
+                                                                    : null
+                                                            }
+                                                            onChange={(selectedOption) =>
+                                                                setSelectedSubcategory((prev) => ({
+                                                                    ...prev,
+                                                                    [type]: { ...prev[type], [selectedCategory[type]]: selectedOption ? selectedOption.value : "" },
+                                                                }))
+                                                            }
+                                                            onCreateOption={(inputValue) => handleAddCategory(type, inputValue, selectedCategory[type])}
+                                                            isClearable
+                                                            isSearchable
+                                                            placeholder="Select or type to add..."
+                                                        />
+                                                    )}
+                                                </div>
+                                            ))}
                                     </div>
                                 )}
 
