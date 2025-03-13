@@ -1,11 +1,15 @@
 ﻿/* Background Image & Full-Screen Centering */
 .login-container {
     height: 100vh;
+    width: 100vw;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: url("https://wallpaperaccess.com/download/white-satin-2630337") no-repeat center center;
+    background: url("C:\Users\sw3\Downloads\pdm wallpaper.png") no-repeat center center; /*https://wenbozhaophotography.com/wp-content/uploads/2022/10/Sticks-and-Stones-collection-Object-Maker-CGI-photography-by-Wenbo-Zhao.jpg*/
+    background-size: cover; /* Ensures the image covers the full screen */
+    background-position: center;
+    background-attachment: fixed;
 }
 
 /* Card Style */
@@ -65,7 +69,7 @@ input {
     font-size: 3rem;
     font-family: Georgia, 'Times New Roman', Times, serif;
     font-weight: bold;
-    margin-top: -200px;
+    margin-top: -100px;
     margin-bottom: 20px;
     padding: 60px;
     color: darkgoldenrod; /*ebe2ff ca4e00*/

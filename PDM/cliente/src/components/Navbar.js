@@ -13,7 +13,7 @@ const Navbar = ({ user, handleLogout }) => {
     return (
         <motion.nav
             className="navbar navbar-expand-lg navbar-dark custom-navbar"
-            initial={hasAnimated ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}  // Only animate on first render
+            initial={hasAnimated ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }} // Only animate on first render
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
         >
@@ -31,33 +31,35 @@ const Navbar = ({ user, handleLogout }) => {
                 </button>
 
                 {/* Collapsible Menu */}
-                <div className="collapse navbar-collapse" id="navbarNav">
-                    <ul className="navbar-nav ms-auto">
-                        {user?.rolename === "admin" && (
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/manage-users">Manage Users</Link>
-                            </li>
-                        )}
+                <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+                    <ul className="navbar-nav align-items-center">
+                       
                         {user && (
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/designs">Designs</Link>
-                            </li>
-                        )}
-                        {user && (
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/admin-setup">Admin Setup</Link>
-                            </li>
-                        )}
-                        {user && (
-                            <li className="nav-item">
-                                <button className="btn btn-danger ms-3" onClick={handleLogout}>Logout</button>
-                            </li>
+                            <>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/designs">Designs</Link>
+                                </li>
+                                {user?.rolename === "admin" && (
+                                    <li className="nav-item">
+                                        <Link className="nav-link" to="/manage-users">Manage Users</Link>
+                                    </li>
+                                )}
+                                {user?.rolename === "admin" && (
+                                    <li className="nav-item">
+                                        <Link className="nav-link" to="/admin-setup">Admin Setup</Link>
+                                    </li>
+                                )}
+                                <li className="nav-item">
+                                    <button className="logout-btn nav-link px-3" onClick={handleLogout}>Logout</button>
+                                </li>
+                            </>
                         )}
                     </ul>
                 </div>
             </div>
         </motion.nav>
     );
+
 };
 
 export default Navbar;

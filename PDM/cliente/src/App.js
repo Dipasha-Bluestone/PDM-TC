@@ -8,6 +8,7 @@ import Login from "./components/Login";
 import Design from "./components/Design";
 import InputDesign from "./components/InputDesign";
 import ManageUsers from "./components/ManageUsers";
+import SingleDesign from "./components/SingleDesign";
 
 function App() {
     const isAuthenticated = !!localStorage.getItem("token");
@@ -38,7 +39,7 @@ const AccessRestricted = () => (
     </div>
 );
 
-    const AnimatedRoutes = ({ isAuthenticated, user, setUser, isAdmin, isCustomer, isSales }) => {
+const AnimatedRoutes = ({ isAuthenticated, user, setUser, isAdmin, isCustomer, isSales, isManager }) => {
         const location = useLocation();
 
         return (<AnimatePresence mode="wait"> {/* Ensures exit animations work */}
@@ -48,7 +49,7 @@ const AccessRestricted = () => (
                 <Route path="/login" element={<Login setUser={setUser} />} />
 
                 {/* Admin-only routes */}
-                {isAuthenticated && isAdmin ? (
+                {isAuthenticated && (isAdmin || isManager) ? (
                     <>
                         <Route path="/register" element={<Register user={user} setUser={setUser} />} />
                         <Route path="/manage-users" element={<ManageUsers user={user} setUser={setUser} />} />
@@ -66,12 +67,14 @@ const AccessRestricted = () => (
                 {isAuthenticated && (isCustomer || isSales) ? (
                     <>
                         <Route path="/designs" element={<Design user={user} setUser={setUser} />} />
-                        <Route path="/bom" element={<InputDesign user={user} setUser={setUser} />} />
+                        <Route path="/bom" element={<AccessRestricted />} />
+                        <Route path="/designs/:design_number" element={<SingleDesign user={user} setUser={setUser} />} />
                     </>
                 ) : (
                     <>
                             <Route path="/designs" element={<Design user={user} setUser={setUser} />} />
                             <Route path="/bom" element={<InputDesign user={user} setUser={setUser} />} />
+                            <Route path="/designs/:design_number" element={<SingleDesign user={user} setUser={setUser} />} />
                     </>
                 )}
             </Routes>

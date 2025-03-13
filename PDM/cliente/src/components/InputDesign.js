@@ -20,7 +20,6 @@ const InputDesign = ({ user, setUser }) => {
     const [types, setTypes] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("");
     const [selectedSubcategory, setSelectedSubcategory] = useState("");
-    const [newSubcategory, setNewSubcategory] = useState("");
     const navigate = useNavigate();
 
     const token = localStorage.getItem("token");
@@ -131,6 +130,23 @@ const InputDesign = ({ user, setUser }) => {
         if (cadFile) formData.append("cad_file", cadFile);
         if (modelSheet) formData.append("model_sheet", modelSheet);
         otherFiles.forEach((file) => formData.append("other_files", file));
+        const selectedCategories = [];
+
+        // Extract only values (IDs) from selectedCategory
+        if (selectedCategory && Object.values(selectedCategory).length) {
+            selectedCategories.push(...Object.values(selectedCategory));
+        }
+
+        // Extract only values (IDs) from selectedSubcategory
+        if (selectedSubcategory && Object.values(selectedSubcategory).length) {
+            Object.values(selectedSubcategory).forEach((sub) => {
+                selectedCategories.push(...Object.values(sub)); // Extract subcategory IDs
+            });
+        }
+
+        console.log("Final Categories to Send:", selectedCategories);
+        formData.append("categories", JSON.stringify(selectedCategories));
+
 
         try {
             const response = await fetch("http://localhost:5000/designs", {
@@ -248,7 +264,11 @@ const InputDesign = ({ user, setUser }) => {
                                         <input type="text" className="form-control" placeholder="Gem Type" value={gem.gem} onChange={(e) => updateGem(index, "gem", e.target.value)} required />
                                         <input type="text" className="form-control" placeholder="Shape" value={gem.shape} onChange={(e) => updateGem(index, "shape", e.target.value)} required />
                                         <input type="text" className="form-control" placeholder="Size" value={gem.size} onChange={(e) => updateGem(index, "size", e.target.value)} required />
-                                        <button type="button" className="btn btn-danger btn-sm" onClick={() => removeGem(index)}>Remove</button>
+                                        <input type="number" className="form-control" placeholder="Count" value={gem.count} onChange={(e) => updateGem(index, "count", e.target.value)} required />
+                                        <input type="number" step="0.01" className="form-control" placeholder="Carat Per Gem" value={gem.carat_per_gem} onChange={(e) => updateGem(index, "carat_per_gem", e.target.value)} required />
+                                        <input type="text" className="form-control" placeholder="Dimensions" value={gem.dimensions} onChange={(e) => updateGem(index, "dimensions", e.target.value)} required />
+                                        <input type="text" className="form-control" placeholder="Setting" value={gem.setting} onChange={(e) => updateGem(index, "setting", e.target.value)} required />
+                                         <button type="button" className="btn btn-danger btn-sm" onClick={() => removeGem(index)}>Remove</button>
                                     </div>
                                 ))}
                                 <button type="button" className="btn btn-primary" onClick={addGem}>Add Gem</button>
@@ -276,7 +296,7 @@ const InputDesign = ({ user, setUser }) => {
                         </div>
 
                         {/* Submit Button */}
-                        <button type="submit" className="btn btn-success mt-3 submit-button">Add Design</button>
+                        <button type="submit" className="btn btn-success mt-3 submit-button" >Add Design</button>
                     </div>
                 </form>
             </div>

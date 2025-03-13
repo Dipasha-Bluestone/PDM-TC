@@ -1,15 +1,51 @@
 ﻿/* Cream Background */
 .home-container {
-    background: url("https://wallpaperaccess.com/download/white-satin-2630337") no-repeat center center;
+    background: url("C:\Users\sw3\Downloads\pdm wallpaper.png") no-repeat center center; /*https://wallpaperaccess.com/download/white-satin-2630337*/
     height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* Complementary Navbar */
 .custom-navbar {
-    background-color: #dbdbdb67; /*#ebe2ff*/
+    background-color: #501616;
+    display: flex;
+    align-items: center; /* Ensures everything in the navbar is vertically aligned */
 }
+
+    .custom-navbar .navbar-brand,
+    .custom-navbar .nav-link,
+    .custom-navbar .logout-btn {
+        color: white !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 8px 15px; /* Ensures uniform spacing */
+        text-align: center;
+    }
+
+        .custom-navbar .nav-link:hover {
+            color: palegoldenrod !important;
+        }
+
+    .custom-navbar .logout-btn {
+        background-color: #b22222; /* Dark red */
+        color: white !important;
+        border-radius: 5px;
+        text-decoration: none;
+        border: none;
+        padding: 8px 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top : -1px
+    }
+
+        .custom-navbar .logout-btn:hover {
+            background-color: #8b0000; /* Darker red on hover */
+        }
+
 
 /* Profile Card */
 .profile-card {
@@ -33,7 +69,7 @@
     height: 150px;
     object-fit: cover;
     border-radius: 50%;
-    border: 3px solid #5D4157;
+    border: 3px solid #501616; /*5D4157*/
 }
 
 /* User Info */
